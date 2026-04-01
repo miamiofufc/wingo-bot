@@ -6,6 +6,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const admin       = require('firebase-admin');
 const fetch       = require('node-fetch');
+console.log("TOKEN:", process.env.BOT_TOKEN);
 
 // ─── CONFIG ────────────────────────────────────────────────────
 const BOT_TOKEN   = process.env.BOT_TOKEN || '8320559806:AAGSPQm52m4KLE6Ok5bqV0asEB4IA_w5Nus';
