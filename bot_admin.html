@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Wingo Oracle — Bot Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#04040e;--bg2:#09091f;--bg3:#0f0f2c;
+  --gold:#f5c518;--gold2:#e8a000;
+  --g:#00e676;--r:#ff3d71;--warn:#ffaa00;--cyan:#00e5ff;
+  --t:#f0f0ff;--t2:#8888aa;--t3:#44446a;
+  --card:rgba(255,255,255,.03);--brd:rgba(255,255,255,.07);--rd:12px
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+button{font-family:inherit;cursor:pointer}a{color:var(--gold)}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--gold2);border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LOGIN */
+#sL{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(245,197,24,.08),transparent),var(--bg)}
+.lc{background:var(--card);border:1px solid var(--brd);border-radius:20px;padding:40px 28px;max-width:380px;width:100%;text-align:center;animation:fadeUp .6s}
+.lc .li{font-family:'Orbitron',monospace;font-size:18px;color:var(--gold);letter-spacing:2px;margin-bottom:4px}
+.lc p{color:var(--t3);font-size:10px;margin-bottom:22px;letter-spacing:2px}
+.lc input{width:100%;padding:13px;background:rgba(255,255,255,.04);border:1.5px solid var(--brd);border-radius:var(--rd);color:var(--t);font-size:15px;outline:none;margin-bottom:14px;text-align:center;font-family:'JetBrains Mono',monospace;letter-spacing:2px}
+.lc input:focus{border-color:var(--gold)}
+.lb{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold2),var(--gold));border:none;border-radius:var(--rd);color:#000;font-size:14px;font-weight:800}
+.lb:hover{opacity:.9}
+.lm{margin-top:10px;font-size:11px;color:var(--r);min-height:18px;font-weight:600}
+
+/* APP */
+#sA{display:none;min-height:100vh}
+.tb{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:rgba(4,4,14,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
+.tb-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:900;background:linear-gradient(135deg,var(--gold),#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tb-r{display:flex;align-items:center;gap:8px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--g);animation:pulse 2s infinite}
+.lo{background:none;border:1px solid rgba(255,61,113,.2);color:var(--r);padding:7px 14px;border-radius:7px;font-size:12px}
+.lo:hover{background:rgba(255,61,113,.06)}
+
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;padding:16px 18px}
+.sc{background:var(--card);border:1px solid var(--brd);border-radius:var(--rd);padding:16px 10px;text-align:center}
+.sc .n{font-size:28px;font-weight:900;font-family:'Orbitron',monospace}
+.sc .l{font-size:10px;color:var(--t2);margin-top:3px;font-weight:600}
+.sc.g .n{color:var(--g)}.sc.r .n{color:var(--r)}.sc.go .n{color:var(--warn)}.sc.b .n{color:var(--cyan)}.sc.p .n{color:var(--gold)}
+
+/* TABS */
+.at{display:flex;padding:0 18px;border-bottom:1px solid var(--brd);flex-wrap:wrap}
+.atb{flex:1;padding:11px 6px;background:none;border:none;color:var(--t3);font-size:11px;font-weight:800;cursor:pointer;border-bottom:2px solid transparent;min-width:80px;transition:all .3s;text-align:center}
+.atb.on{color:var(--gold);border-bottom-color:var(--gold)}
+.ap{display:none;padding:18px;animation:fadeUp .3s}.ap.on{display:block}
+
+/* CARDS */
+.pc{background:var(--card);border:1px solid var(--brd);border-radius:var(--rd);padding:18px;margin-bottom:14px}
+.pc h3{font-size:13px;margin-bottom:14px;display:flex;align-items:center;gap:7px;font-weight:800}
+.pc h3 i{color:var(--gold2)}
+
+/* MAINTENANCE TOGGLE */
+.maint-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.toggle{position:relative;width:52px;height:28px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:28px;cursor:pointer;transition:.3s;border:1.5px solid var(--brd)}
+.toggle input:checked+.toggle-slider{background:var(--r);border-color:var(--r)}
+.toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:50%;transform:translateY(-50%);background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked+.toggle-slider:before{transform:translateY(-50%) translateX(24px)}
+.maint-status{font-size:12px;font-weight:700}
+.maint-status.on{color:var(--r)}.maint-status.off{color:var(--g)}
+.maint-msg textarea{width:100%;padding:10px;background:rgba(255,255,255,.04);border:1.5px solid var(--brd);border-radius:9px;color:var(--t);font-size:12px;outline:none;resize:vertical;min-height:80px;font-family:'Inter',sans-serif;margin-bottom:10px}
+.maint-msg textarea:focus{border-color:var(--r)}
+
+/* BROADCAST */
+.bc-area textarea{width:100%;padding:10px;background:rgba(255,255,255,.04);border:1.5px solid var(--brd);border-radius:9px;color:var(--t);font-size:12px;outline:none;resize:vertical;min-height:100px;font-family:'Inter',sans-serif;margin-bottom:10px}
+.bc-area textarea:focus{border-color:var(--cyan)}
+.bc-preview{padding:10px 12px;background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.15);border-radius:9px;font-size:11px;color:var(--t2);margin-bottom:10px;display:none;white-space:pre-wrap;line-height:1.6}
+
+/* BUTTONS */
+.btn{padding:10px 22px;border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;transition:opacity .2s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{opacity:.85}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#000}
+.btn-red{background:rgba(255,61,113,.12);color:var(--r);border:1px solid rgba(255,61,113,.2)}
+.btn-green{background:rgba(0,230,118,.1);color:var(--g);border:1px solid rgba(0,230,118,.2)}
+.btn-cyan{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.2)}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:10px;margin-top:4px}
+th{background:var(--bg3);color:var(--t3);padding:9px 7px;text-align:left;font-weight:800;font-size:9px;text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0}
+td{padding:9px 7px;border-bottom:1px solid rgba(255,255,255,.03);white-space:nowrap}
+tr:hover{background:rgba(255,255,255,.02)}
+
+.bd{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:800}
+.bd.on{background:rgba(0,230,118,.08);color:var(--g)}
+.bd.of{background:rgba(68,68,106,.06);color:var(--t3)}
+
+/* LOG */
+#aLog{max-height:320px;overflow-y:auto;background:rgba(0,0,0,.15);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:10px;border:1px solid var(--brd)}
+#aLog .le{padding:3px 0;border-bottom:1px solid rgba(255,255,255,.02)}
+#aLog .tm{color:var(--gold2);margin-right:6px}
+
+/* TOAST */
+.toast{position:fixed;top:16px;right:16px;background:var(--bg2);border:1.5px solid var(--g);border-radius:var(--rd);padding:12px 18px;z-index:9999;font-size:12px;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5);font-weight:700;max-width:300px;animation:fadeUp .3s}
+.toast.on{display:block}.toast.er{border-color:var(--r)}
+
+@media(max-width:600px){.sg{grid-template-columns:repeat(2,1fr)}.atb{font-size:10px;padding:9px 4px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="sL">
+<div class="lc">
+  <div style="font-size:40px;margin-bottom:10px">🤖</div>
+  <div class="li">BOT ADMIN</div>
+  <p>Wingo Oracle Control Panel</p>
+  <input type="password" id="pw" placeholder="Admin Password" autocomplete="off">
+  <button class="lb" onclick="login()"><i class="fas fa-lock-open"></i>&nbsp;&nbsp;Login</button>
+  <div class="lm" id="lm"></div>
+</div></div>
+
+<!-- ADMIN APP -->
+<div id="sA">
+<div class="tb">
+  <div class="tb-title">🤖 BOT ADMIN</div>
+  <div class="tb-r">
+    <span style="font-size:10px;color:var(--g);display:flex;align-items:center;gap:5px;font-weight:700"><span class="live-dot"></span>Live</span>
+    <button class="lo" onclick="logoutA()"><i class="fas fa-sign-out-alt"></i>&nbsp;Logout</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="sg">
+  <div class="sc g"><div class="n" id="zOn">0</div><div class="l">Online</div></div>
+  <div class="sc b"><div class="n" id="zTot">0</div><div class="l">Total Users</div></div>
+  <div class="sc p"><div class="n" id="zPred">0</div><div class="l">Predictions</div></div>
+  <div class="sc go"><div class="n" id="zAct">0</div><div class="l">Active Today</div></div>
+</div>
+
+<!-- TABS -->
+<div class="at">
+  <button class="atb on" onclick="aTab('maint')"><i class="fas fa-tools"></i>&nbsp;Maintenance</button>
+  <button class="atb" onclick="aTab('broadcast')"><i class="fas fa-bullhorn"></i>&nbsp;Broadcast</button>
+  <button class="atb" onclick="aTab('users')"><i class="fas fa-users"></i>&nbsp;Users</button>
+  <button class="atb" onclick="aTab('log')"><i class="fas fa-terminal"></i>&nbsp;Log</button>
+</div>
+
+<!-- MAINTENANCE TAB -->
+<div class="ap on" id="ap-maint">
+  <div class="pc">
+    <h3><i class="fas fa-power-off"></i>Maintenance Mode</h3>
+    <div class="maint-row">
+      <label class="toggle">
+        <input type="checkbox" id="maintToggle" onchange="toggleMaint()">
+        <div class="toggle-slider"></div>
+      </label>
+      <span class="maint-status off" id="maintStatus">OFFLINE MODE: OFF</span>
+    </div>
+    <p style="font-size:10px;color:var(--t3);margin-bottom:12px">When ON — all bot commands return the maintenance message below. Users see a notice instantly.</p>
+    <div class="maint-msg">
+      <div style="font-size:9px;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Maintenance Message</div>
+      <textarea id="maintMsg" placeholder="🔧 Bot is under maintenance. We'll be back shortly!"></textarea>
+      <button class="btn btn-gold" onclick="saveMaint()"><i class="fas fa-save"></i>&nbsp;Save & Apply</button>
+    </div>
+  </div>
+  <div class="pc">
+    <h3><i class="fas fa-info-circle"></i>Quick Status</h3>
+    <div id="maintInfo" style="font-size:11px;color:var(--t2);line-height:1.8">Loading...</div>
+  </div>
+</div>
+
+<!-- BROADCAST TAB -->
+<div class="ap" id="ap-broadcast">
+  <div class="pc">
+    <h3><i class="fas fa-bullhorn"></i>Send Announcement to All Users</h3>
+    <p style="font-size:10px;color:var(--t3);margin-bottom:14px">Message will be sent to all bot users immediately.</p>
+    <div class="bc-area">
+      <div style="font-size:9px;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:700">Message (supports *bold*, _italic_)</div>
+      <textarea id="bcMsg" placeholder="Type your announcement here..." oninput="previewBC()"></textarea>
+      <div style="font-size:9px;color:var(--t3);margin-bottom:6px;font-weight:700">📋 Preview:</div>
+      <div class="bc-preview" id="bcPreview"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-cyan" onclick="previewBC()"><i class="fas fa-eye"></i>&nbsp;Preview</button>
+        <button class="btn btn-gold" onclick="sendBroadcast()"><i class="fas fa-paper-plane"></i>&nbsp;Send to All Users</button>
+      </div>
+    </div>
+    <div id="bcHistory" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- USERS TAB -->
+<div class="ap" id="ap-users">
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <input id="uSearch" placeholder="🔍  Search username / chat ID..." oninput="rUs()"
+      style="flex:1;padding:9px 12px;background:rgba(255,255,255,.04);border:1.5px solid var(--brd);border-radius:8px;color:var(--t);font-size:12px;outline:none;min-width:150px">
+    <select id="uFilter" onchange="rUs()" style="padding:9px;background:rgba(255,255,255,.04);border:1.5px solid var(--brd);border-radius:8px;color:var(--t);font-size:12px;outline:none">
+      <option value="all">All Users</option>
+      <option value="online">Online Now</option>
+      <option value="today">Active Today</option>
+    </select>
+  </div>
+  <div class="pc" style="padding:10px">
+    <div class="tw">
+      <table>
+        <thead><tr><th>Chat ID</th><th>Username</th><th>Name</th><th>Online</th><th>Last Active</th><th>Predictions</th></tr></thead>
+        <tbody id="uB"><tr><td colspan="6" style="text-align:center;color:var(--t3);padding:14px">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- LOG TAB -->
+<div class="ap" id="ap-log">
+  <div class="pc">
+    <h3><i class="fas fa-terminal"></i>Activity Log</h3>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+      <button class="btn btn-red" onclick="A.lg=[];renderLog()" style="font-size:9px;padding:5px 10px"><i class="fas fa-trash"></i>&nbsp;Clear</button>
+    </div>
+    <div id="aLog"><div style="color:var(--t3);font-size:10px">Monitoring live activity...</div></div>
+  </div>
+</div>
+
+</div><!-- /sA -->
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+// ─── SAFE FIREBASE INIT ───────────────────────────────────────
+let db;
+try{
+  if(!firebase.apps.length) firebase.initializeApp({databaseURL:'https://gaineo-default-rtdb.firebaseio.com/'});
+  db=firebase.database();
+}catch(e){console.error('Firebase:',e.message)}
+
+const PW='Admin@123';
+let A={users:{},lg:[]};
+
+// ─── UI HELPERS ──────────────────────────────────────────────
+function toast(m,e){const t=document.getElementById('toast');t.textContent=m;t.className='toast on'+(e?' er':'');setTimeout(()=>t.className='toast',3200)}
+function addL(m){const ts=new Date().toLocaleTimeString();A.lg.unshift({ts,m});if(A.lg.length>200)A.lg.pop();renderLog()}
+function renderLog(){const el=document.getElementById('aLog');if(el)el.innerHTML=A.lg.map(l=>`<div class="le"><span class="tm">[${l.ts}]</span>${l.m}</div>`).join('')||'<div style="color:var(--t3);font-size:10px">No activity yet</div>'}
+function fD(ts){if(!ts)return'—';const d=Date.now()-ts;if(d<6e4)return'Just now';if(d<36e5)return Math.floor(d/6e4)+'m ago';if(d<864e5)return Math.floor(d/36e5)+'h ago';return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+
+// ─── AUTH ────────────────────────────────────────────────────
+function login(){
+  const p=document.getElementById('pw').value;
+  if(p===PW){
+    sessionStorage.setItem('badm','1');
+    document.getElementById('sL').style.display='none';
+    document.getElementById('sA').style.display='block';
+    startListeners();
+    addL('Admin logged in');
+  }else{
+    document.getElementById('lm').textContent='Wrong password';
+    document.getElementById('pw').value='';
+  }
+}
+function logoutA(){
+  sessionStorage.removeItem('badm');
+  stopListeners();
+  document.getElementById('sA').style.display='none';
+  document.getElementById('sL').style.display='flex';
+  document.getElementById('pw').value='';
+}
+document.getElementById('pw').addEventListener('keypress',e=>{if(e.key==='Enter')login()});
+if(sessionStorage.getItem('badm')==='1'){document.getElementById('sL').style.display='none';document.getElementById('sA').style.display='block';startListeners()}
+
+// ─── TABS ────────────────────────────────────────────────────
+function aTab(t){const tabs=['maint','broadcast','users','log'];document.querySelectorAll('.atb').forEach((b,i)=>b.classList.toggle('on',tabs[i]===t));tabs.forEach(n=>document.getElementById('ap-'+n).classList.toggle('on',n===t))}
+
+// ─── FIREBASE LISTENERS ──────────────────────────────────────
+let listeners=[];
+function stopListeners(){listeners.forEach(fn=>fn());listeners=[]}
+
+function startListeners(){
+  if(!db){toast('Firebase not connected',true);return}
+
+  // Bot users
+  const usersRef=db.ref('bot_users');
+  usersRef.on('value',snap=>{A.users=snap.val()||{};upStats();rUs()});
+  listeners.push(()=>usersRef.off());
+
+  // New user joined
+  usersRef.on('child_added',snap=>{const d=snap.val();if(d&&d.firstName)addL('🆕 New user: '+(d.firstName||'')+(d.username?' @'+d.username:''))});
+
+  // User came online/offline
+  usersRef.on('child_changed',snap=>{const d=snap.val();if(!d)return;const name=d.firstName||snap.key.toString().substring(0,8);if(d.online)addL('🟢 '+name+' online');else addL('⚫ '+name+' offline')});
+
+  // Maintenance state
+  const maintRef=db.ref('bot_maintenance');
+  maintRef.on('value',snap=>{
+    const d=snap.val()||{};
+    const tog=document.getElementById('maintToggle');
+    const sta=document.getElementById('maintStatus');
+    const msg=document.getElementById('maintMsg');
+    if(tog)tog.checked=!!d.active;
+    if(sta){sta.textContent=d.active?'⚠️ MAINTENANCE: ON — Bot showing offline message':'✅ MAINTENANCE: OFF — Bot is live';sta.className='maint-status '+(d.active?'on':'off')}
+    if(msg&&d.message&&!msg.value)msg.value=d.message;
+    updateMaintInfo(d);
+    if(d.active)addL('🔧 Maintenance mode: ON');
+  });
+  listeners.push(()=>maintRef.off());
+
+  // Recent broadcasts
+  db.ref('bot_broadcast').limitToLast(5).on('value',snap=>{
+    const items=snap.val()||{};
+    const sorted=Object.entries(items).sort((a,b)=>(b[0])-(a[0]));
+    const el=document.getElementById('bcHistory');
+    if(!el)return;
+    if(!sorted.length){el.innerHTML='';return}
+    el.innerHTML='<div style="font-size:9px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Recent Broadcasts</div>'+
+      sorted.map(([k,d])=>`<div style="padding:6px 0;border-bottom:1px solid var(--brd);font-size:10px"><span style="color:var(--t3)">${d.sentAt?fD(d.sentAt):'Pending'}</span><br>${(d.message||'').substring(0,80)}${(d.message||'').length>80?'...':''}</div>`).join('');
+  });
+}
+
+// ─── STATS ───────────────────────────────────────────────────
+function upStats(){
+  const us=Object.values(A.users),now=Date.now(),today=now-864e5;
+  document.getElementById('zOn').textContent=us.filter(u=>u.online===true).length;
+  document.getElementById('zTot').textContent=us.length;
+  document.getElementById('zAct').textContent=us.filter(u=>u.lastActive&&u.lastActive>today).length;
+  // Count total predictions (approximation from users data)
+  let pTotal=0;us.forEach(u=>{if(u.predictionCount)pTotal+=u.predictionCount});
+  document.getElementById('zPred').textContent=pTotal||'—';
+}
+
+// ─── MAINTENANCE ─────────────────────────────────────────────
+async function toggleMaint(){
+  const tog=document.getElementById('maintToggle');
+  const msg=document.getElementById('maintMsg').value.trim()||'🔧 Bot is under maintenance. We\'ll be back shortly!';
+  try{
+    await db.ref('bot_maintenance').set({active:tog.checked,message:msg,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+    toast(tog.checked?'⚠️ Maintenance ON — Bot showing offline message':'✅ Maintenance OFF — Bot is live');
+    addL(tog.checked?'🔧 Admin enabled maintenance':'✅ Admin disabled maintenance');
+  }catch(e){toast('Error: '+e.message,true)}
+}
+
+async function saveMaint(){
+  const msg=document.getElementById('maintMsg').value.trim();
+  if(!msg){toast('Enter a maintenance message',true);return}
+  const tog=document.getElementById('maintToggle');
+  try{
+    await db.ref('bot_maintenance').set({active:tog.checked,message:msg,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+    toast('✅ Maintenance settings saved!');
+    addL('💾 Maintenance message updated');
+  }catch(e){toast('Error: '+e.message,true)}
+}
+
+function updateMaintInfo(d){
+  const el=document.getElementById('maintInfo');if(!el)return;
+  el.innerHTML=`<div><strong style="color:${d.active?'var(--r)':'var(--g)'}">Status:</strong> ${d.active?'⚠️ OFFLINE (maintenance)':'✅ ONLINE (bot active)'}</div>`+
+    `<div><strong style="color:var(--t2)">Message:</strong> "${d.message||'None set'}"</div>`+
+    `<div><strong style="color:var(--t2)">Last updated:</strong> ${d.updatedAt?fD(d.updatedAt):'Never'}</div>`;
+}
+
+// ─── BROADCAST ───────────────────────────────────────────────
+function previewBC(){
+  const msg=document.getElementById('bcMsg').value;
+  const el=document.getElementById('bcPreview');
+  el.textContent='📢 Announcement\n\n'+msg;
+  el.style.display=msg.trim()?'block':'none';
+}
+
+async function sendBroadcast(){
+  const msg=document.getElementById('bcMsg').value.trim();
+  if(!msg){toast('Enter a message first',true);return}
+  const userCount=Object.keys(A.users).length;
+  if(!confirm(`Send to ${userCount} users?`))return;
+  try{
+    await db.ref('bot_broadcast').push({message:msg,active:true,createdAt:firebase.database.ServerValue.TIMESTAMP,sentAt:null,recipients:userCount});
+    toast(`✅ Broadcast queued for ${userCount} users!`);
+    addL(`📢 Broadcast sent to ${userCount} users`);
+    document.getElementById('bcMsg').value='';
+    document.getElementById('bcPreview').style.display='none';
+  }catch(e){toast('Error: '+e.message,true)}
+}
+
+// ─── USERS TABLE ─────────────────────────────────────────────
+function rUs(){
+  const b=document.getElementById('uB');if(!b)return;
+  const search=(document.getElementById('uSearch')?.value||'').toLowerCase();
+  const filter=document.getElementById('uFilter')?.value||'all';
+  const now=Date.now(),today=now-864e5;
+  let e=Object.entries(A.users);
+  if(filter==='online')e=e.filter(([,u])=>u.online===true);
+  if(filter==='today')e=e.filter(([,u])=>u.lastActive&&u.lastActive>today);
+  if(search)e=e.filter(([id,u])=>id.toString().includes(search)||(u.username||'').toLowerCase().includes(search)||(u.firstName||'').toLowerCase().includes(search));
+  e.sort((a,b)=>{if(a[1].online&&!b[1].online)return-1;if(!a[1].online&&b[1].online)return 1;return(b[1].lastActive||0)-(a[1].lastActive||0)});
+  if(!e.length){b.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:14px">No users found</td></tr>';return}
+  b.innerHTML=e.slice(0,100).map(([id,u])=>{
+    const on=u.online===true?'<span class="bd on">● On</span>':'<span class="bd of">○ Off</span>';
+    return`<tr>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:9px">${id}</td>
+      <td style="font-size:10px;color:var(--cyan)">${u.username?'@'+u.username:'—'}</td>
+      <td style="font-size:10px">${u.firstName||'—'}</td>
+      <td>${on}</td>
+      <td style="font-size:9px;color:var(--t3)">${u.lastActive?fD(u.lastActive):'—'}</td>
+      <td style="font-size:9px;color:var(--gold)">${u.predictionCount||'0'}</td>
+    </tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
