@@ -8,7 +8,7 @@ const admin       = require('firebase-admin');
 const fetch       = require('node-fetch');
 
 // ─── CONFIG ────────────────────────────────────────────────────
-const BOT_TOKEN   = process.env.BOT_TOKEN || 'YOUR_NEW_BOT_TOKEN_HERE';
+const BOT_TOKEN   = process.env.BOT_TOKEN || '8320559806:AAESI80rU0GvaIp1dzs-lY9BSZhsfJauNSA';
 const ADMIN_IDS   = (process.env.ADMIN_IDS || '').split(',').map(Number).filter(Boolean);
 // Firebase service account JSON — set as env var FIREBASE_CRED (stringified JSON)
 // OR put your serviceAccountKey.json path here:
